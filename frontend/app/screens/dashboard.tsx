@@ -1,29 +1,62 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 
 export default function DashboardScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido a GoalSaver 🎯</Text>
-      <Text style={styles.subtitle}>Aquí verás tus ahorros y metas</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>📊 Dashboard</Text>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Crear nuevo ahorro</Text>
-      </TouchableOpacity>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Ahorros Totales</Text>
+        <Text style={styles.cardValue}>$12,500 MXN</Text>
+      </View>
 
-      <TouchableOpacity style={styles.buttonSecondary}>
-        <Text style={styles.buttonTextSecondary}>Ver mis grupos</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Meta del Mes</Text>
+        <Text style={styles.cardValue}>$2,000 / $3,000</Text>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Próximos Pagos</Text>
+        <Text style={styles.cardValue}>3 pendientes</Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 10 },
-  subtitle: { fontSize: 16, marginBottom: 30, color: '#555' },
-  button: { backgroundColor: '#007AFF', padding: 15, borderRadius: 10, marginBottom: 15, width: '80%', alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  buttonSecondary: { borderWidth: 1, borderColor: '#007AFF', padding: 15, borderRadius: 10, width: '80%', alignItems: 'center' },
-  buttonTextSecondary: { color: '#007AFF', fontWeight: 'bold' },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: "#f9fafb",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#1e293b",
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 5,
+    color: "#475569",
+  },
+  cardValue: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#0f172a",
+  },
 });

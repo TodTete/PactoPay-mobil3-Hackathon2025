@@ -1,49 +1,60 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { StatusBar } from "expo-status-bar";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 
-// Importar las vistas desde tu carpeta app/
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
-import HomeScreen from "../screens/HomeScreen";
+// Importar las pantallas
+import AjustesScreen from "../screens/ajustes";
+import ContactosScreen from "../screens/contactos";
+import CrearAhorroScreen from "../screens/crear-ahorro";
+import DashboardScreen from "../screens/dashboard";
+import InvitacionScreen from "../screens/invitacion";
+import PerfilScreen from "../screens/perfil";
+import HomeScreen from "../screens/home";
 
-export type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  Home: undefined;
-};
+const Tab = createBottomTabNavigator();
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-export default function App() {
+export default function TabsNavigator() {
   return (
-    <NavigationContainer>
-      <StatusBar style="auto" />
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{
-          headerStyle: { backgroundColor: "#1e293b" },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontWeight: "bold" },
-        }}
-      >
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ title: "Iniciar Sesión" }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ title: "Registrarse" }}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: "Inicio" }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: true,
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
+
+          switch (route.name) {
+            case "Dashboard":
+              iconName = "home";
+              break;
+            case "Perfil":
+              iconName = "person";
+              break;
+            case "Ajustes":
+              iconName = "settings";
+              break;
+            case "CrearAhorro":
+              iconName = "add-circle";
+              break;
+            case "Contactos":
+              iconName = "people";
+              break;
+            case "Invitacion":
+              iconName = "mail";
+              break;
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: "#1e293b",
+        tabBarInactiveTintColor: "gray",
+      })}
+    >
+      <Tab.Screen name="Ajustes" component={AjustesScreen} />
+      <Tab.Screen name="Contactos" component={ContactosScreen} />
+      <Tab.Screen name="CrearAhorro" component={CrearAhorroScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Perfil" component={PerfilScreen} />
+      <Tab.Screen name="Invitacion" component={InvitacionScreen} />
+    </Tab.Navigator>
   );
 }
