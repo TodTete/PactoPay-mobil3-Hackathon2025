@@ -2,14 +2,11 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
-// Importar las pantallas
-import AjustesScreen from "../screens/ajustes";
-import ContactosScreen from "../screens/contactos";
-import CrearAhorroScreen from "../screens/crear-ahorro";
-import DashboardScreen from "../screens/dashboard";
-import InvitacionScreen from "../screens/invitacion";
-import PerfilScreen from "../screens/perfil";
-import HomeScreen from "../screens/home";
+import DashboardScreen from "../screens/dashboard/DashboardScreen";
+import AgreementsListScreen from "../screens/agreements/AgreementsListScreen";
+import CreateAgreementScreen from "../screens/agreements/CreateAgreementScreen";
+import ProfileScreen from "../screens/profile/ProfileScreen";
+import SettingsScreen from "../screens/profile/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -25,20 +22,17 @@ export default function TabsNavigator() {
             case "Dashboard":
               iconName = "home";
               break;
-            case "Perfil":
-              iconName = "person";
+            case "Agreements":
+              iconName = "document-text";
               break;
-            case "Ajustes":
-              iconName = "settings";
-              break;
-            case "CrearAhorro":
+            case "CreateAgreement":
               iconName = "add-circle";
               break;
-            case "Contactos":
-              iconName = "people";
+            case "Profile":
+              iconName = "person";
               break;
-            case "Invitacion":
-              iconName = "mail";
+            case "Settings":
+              iconName = "settings";
               break;
           }
 
@@ -48,13 +42,11 @@ export default function TabsNavigator() {
         tabBarInactiveTintColor: "gray",
       })}
     >
-      <Tab.Screen name="Ajustes" component={AjustesScreen} />
-      <Tab.Screen name="Contactos" component={ContactosScreen} />
-      <Tab.Screen name="CrearAhorro" component={CrearAhorroScreen} />
-      <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Perfil" component={PerfilScreen} />
-      <Tab.Screen name="Invitacion" component={InvitacionScreen} />
+      <Tab.Screen name="Agreements" component={AgreementsListScreen} />
+      <Tab.Screen name="CreateAgreement" component={CreateAgreementScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
