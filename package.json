@@ -1,0 +1,21 @@
+{
+  "name": "goalsaver",
+  "version": "1.0.0",
+  "description": "**GoalSaver** es una aplicación Web3 enfocada en **incentivar el ahorro colaborativo** de manera divertida, segura y transparente.\r A través de dinámicas de ahorro en grupo, los usuarios pueden crear metas compartidas —como un viaje, un fondo personal o un proyecto con amigos— y depositar en conjunto hasta cumplir el objetivo, con el atractivo de un **bono inicial competitivo** que motiva a cumplir antes que los demás.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TodTete/GoalSaver.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TodTete/GoalSaver/issues"
+  },
+  "homepage": "https://github.com/TodTete/GoalSaver#readme"
+}
