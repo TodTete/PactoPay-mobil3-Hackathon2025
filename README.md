@@ -1,70 +1,90 @@
 
-# GoalSaver 🏦✨
+---
 
-**GoalSaver** es una aplicación Web3 enfocada en **incentivar el ahorro colaborativo** de manera divertida, segura y transparente.
-A través de dinámicas de ahorro en grupo, los usuarios pueden crear metas compartidas —como un viaje, un fondo personal o un proyecto con amigos— y depositar en conjunto hasta cumplir el objetivo, con el atractivo de un **bono inicial competitivo** que motiva a cumplir antes que los demás.
+# PactoPay
+
+**Pagos transparentes y automatizados para freelancers en Latinoamérica**
+
+## 🚀 Descripción
+
+PactoPay es una plataforma Web3 que convierte los acuerdos de trabajo en **contratos inteligentes**.
+Los pagos se liberan automáticamente cuando se cumplen los entregables, garantizando que los freelancers reciban su dinero de forma **segura, rápida y sin fraudes**, mientras los clientes solo pagan al aprobar el trabajo.
+
+Cada transacción queda registrada en **blockchain**, asegurando transparencia total y confianza en cada proyecto.
 
 ---
 
-## 🚀 ¿Cómo funciona?
+## 📌 Problema
 
-1. **Registro sencillo**
-   Los usuarios pueden registrarse con su red social o correo electrónico mediante **Reown**, obteniendo una wallet lista para interactuar.
-
-2. **Creación de un fondo de ahorro**
-
-   * Un usuario define las reglas: monto objetivo, depósito inicial, fecha límite y distribución de recompensas.
-   * Invita a sus amigos o familiares a participar.
-
-3. **Dinámica de ahorro**
-
-   * Cada participante debe hacer un **depósito inicial** (ej. 5 USDC).
-   * Posteriormente, van sumando aportaciones hasta cumplir con la meta.
-   * El primero en alcanzar su parte gana el **bonus del depósito inicial** (100% o distribuido con el segundo lugar, según las reglas definidas).
-
-4. **Liberación de fondos**
-
-   * Si se cumple la meta: los fondos se liberan automáticamente en la wallet de cada participante.
-   * Si no se cumple antes de la fecha límite: cada usuario recibe de regreso lo que aportó.
+Según el *Global Freelancer Report 2024*, el **48% de los freelancers experimenta retrasos o pérdidas en sus pagos**, especialmente en América Latina, donde los sistemas tradicionales son lentos y poco transparentes.
 
 ---
 
-## 🎯 Ejemplos de uso
+## 💡 Nuestra Solución
 
-* **Viaje en familia** ✈️: todos ahorran en conjunto, y el más constante obtiene un incentivo extra.
-* **Fondo de emergencia** 💼: grupo de amigos creando un colchón común.
-* **Metas personales compartidas** 🏋️: estudios, gadgets, hobbies o proyectos colaborativos.
-
----
-
-## 🔐 Seguridad y confianza
-
-* Los fondos quedan **bloqueados en smart contracts** hasta el cumplimiento de las condiciones.
-* No existe riesgo de pérdida: el usuario siempre recibe de regreso lo aportado si la meta no se cumple.
-* Transparencia garantizada con blockchain y testeo en **Monad Testnet**.
+* Contratos inteligentes que aseguran pagos justos.
+* Onboarding simple con **Reown AppKit** (registro con email o redes).
+* Experiencia fluida gracias a **0x Gasless API** (pagos sin preocuparse por comisiones).
+* Distribución automática de pagos entre todos los colaboradores según porcentajes definidos.
 
 ---
 
-## 💡 Innovación
+## ⚙️ Cómo Funciona
 
-GoalSaver transforma el ahorro en una **dinámica social y competitiva**, convirtiendo lo que normalmente es un proceso individual y aburrido en una experiencia gamificada, colaborativa y justa.
+1. El cliente crea un acuerdo con monto y porcentajes.
+2. Los freelancers reciben invitación para aceptar o rechazar.
+3. Una vez aceptado, el cliente paga con un solo clic.
+4. El contrato reparte automáticamente los fondos.
 
----
-
-## ⚙️ Stack tecnológico
-
-* **Frontend:** React + TailwindCSS
-* **Autenticación y Wallet:** Reown
-* **Blockchain:** Monad Testnet
-* **Smart Contracts:** Solidity / Vyper
-* **Backend:** Node.js + Express
-* **Base de Datos:** MongoDB / Firestore
-* **Deploy:** Vercel + Hardhat
+✅ Transparente, rápido y sin riesgos.
 
 ---
 
-## 🌟 Nuestra visión
+## 🌍 Impacto
 
-Crear una herramienta que motive a jóvenes y familias a ahorrar de forma **sencilla, transparente y divertida**, con la confianza de que sus fondos estarán seguros y con la motivación extra de ganar recompensas al cumplir sus metas.
+* **Freelancers:** pagos garantizados, sin riesgo de fraude.
+* **Clientes:** eliminan retrasos y conflictos, pagan solo al aprobar.
+* **Sociedad:** fomenta transparencia, igualdad y combate la corrupción.
+
+Alineado con los **ODS 8, 10 y 16 de la ONU**.
+
+---
+
+## 🎯 Mercado Objetivo
+
+* Freelancers y equipos en **Latinoamérica**.
+* Profesionales en tecnología, diseño, marketing, redacción, consultoría.
+* Agencias pequeñas que colaboran por proyectos.
+
+📊 **Datos clave:**
+
+* 1.5B freelancers en el mundo.
+* 25M en LatAm.
+* Mercado de \$50B USD con 15% de crecimiento anual.
+
+---
+
+## 👥 Equipo
+
+* Ricardo Vallejo Sánchez
+* José Alfredo Ruiz Mendoza
+* Cristian Gerardo Escalante Torres
+
+---
+
+## 🏆 Tracks & Bounties (Hackathon)
+
+* **Track Principal:** Pagos
+* **Bounty Reown:** Mejor onboarding y UX
+* **Bounty 0x:** Gasless API
+* **Bounty BGA (ODS ONU):** Impacto social y transparencia laboral
+
+---
+
+## 🔮 Próximos pasos
+
+* Desarrollar MVP funcional con contratos inteligentes en Solidity.
+* Integrar Reown AppKit y 0x Gasless API.
+* Testear casos reales de freelancers y clientes.
 
 ---
