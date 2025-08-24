@@ -1,25 +1,34 @@
+
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../type/navigation";
 
+type Props = {
+  setIsLoggedIn: (value: boolean) => void;
+};
+
 type LoginScreenProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
-export default function LoginScreen() {
+export default function LoginScreen({ setIsLoggedIn }: Props) {
   const navigation = useNavigation<LoginScreenProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+
   const handleLogin = () => {
-    // Lógica de autenticación
-    navigation.replace("MainTabs");
+    // Simulación de login
+    if (email && password) {
+      setIsLoggedIn(true); // 🚀 cambia estado global
+    } else {
+      alert("Ingresa usuario y contraseña");
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>GoalGuard</Text>
-      
       <TextInput
         style={styles.input}
         placeholder="Correo electrónico"
@@ -28,7 +37,6 @@ export default function LoginScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-      
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
@@ -36,11 +44,9 @@ export default function LoginScreen() {
         onChangeText={setPassword}
         secureTextEntry
       />
-
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
-
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.link}>¿No tienes cuenta? Regístrate</Text>
       </TouchableOpacity>

@@ -1,4 +1,5 @@
-import React from "react";
+// App.tsx
+import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RootStackParamList } from "./type/navigation";
@@ -15,6 +16,8 @@ import PaymentScreen from "./app/screens/payment/PaymentScreen";
 import SupportScreen from "./app/screens/support/SupportScreen";
 import ProfileScreen from "./app/screens/profile/ProfileScreen";
 import SettingsScreen from "./app/screens/profile/SettingsScreen";
+import { AgreementsProvider } from "./app/context/AgreementsContext";
+import { LogBox } from "react-native";
 
 // Tabs
 import TabsNavigator from "./app/(tabs)/index";
@@ -22,80 +25,62 @@ import TabsNavigator from "./app/(tabs)/index";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  LogBox.ignoreAllLogs(true); // Oculta todas las advertencias y errores
+  // 🚀 estado para simular login
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Login"
-        screenOptions={{
-          headerStyle: { backgroundColor: "#1e293b" },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontWeight: "bold" },
-        }}
-      >
-        {/* Auth */}
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Register"
-          component={RegisterScreen}
-          options={{ headerShown: false }}
-        />
+    <AgreementsProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerStyle: { backgroundColor: "#1e293b" },
+            headerTintColor: "#fff",
+            headerTitleStyle: { fontWeight: "bold" },
+          }}
+        >
+          {isLoggedIn ? (
+            // ✅ Usuario logueado → mostrar MainTabs
+            <Stack.Screen
+              name="MainTabs"
+              component={TabsNavigator}
+              options={{ headerShown: false }}
+            />
 
-        {/* Tabs */}
-        <Stack.Screen
-          name="MainTabs"
-          component={TabsNavigator}
-          options={{ headerShown: false }}
-        />
+          ) : (
+            // ❌ Usuario NO logueado → mostrar Login/Register
+            <>
+              <Stack.Screen name="Login" options={{ headerShown: false }}>
+                {(props) => (
+                  <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />
+                )}
+              </Stack.Screen>
+              <Stack.Screen
+                name="Register"
+                component={RegisterScreen}
+                options={{ headerShown: false }}
+              />
+            </>
+          )}
 
-        {/* Main */}
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        <Stack.Screen
-          name="Agreements"
-          component={AgreementsListScreen}
-          options={{ title: "Mis Acuerdos" }}
-        />
-        <Stack.Screen
-          name="AgreementDetail"
-          component={AgreementDetailScreen}
-          options={{ title: "Detalles del Acuerdo" }}
-        />
-        <Stack.Screen
-          name="CreateAgreement"
-          component={CreateAgreementScreen}
-          options={{ title: "Crear Acuerdo" }}
-        />
-
-        {/* Otros */}
-        <Stack.Screen
-          name="ReviewOffer"
-          component={ReviewOfferScreen}
-          options={{ title: "Revisar Oferta" }}
-        />
-        <Stack.Screen
-          name="Payment"
-          component={PaymentScreen}
-          options={{ title: "Procesar Pago" }}
-        />
-        <Stack.Screen
-          name="Support"
-          component={SupportScreen}
-          options={{ title: "Soporte" }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ title: "Perfil" }}
-        />
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{ title: "Configuración" }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+          {/* Pantallas extra */}
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <Stack.Screen name="Agreements" component={AgreementsListScreen} />
+          <Stack.Screen
+            name="AgreementDetail"
+            component={AgreementDetailScreen}
+          />
+          <Stack.Screen
+            name="CreateAgreement"
+            component={CreateAgreementScreen}
+          />
+          <Stack.Screen name="ReviewOffer" component={ReviewOfferScreen} />
+          <Stack.Screen name="Payment" component={PaymentScreen} />
+          <Stack.Screen name="Support" component={SupportScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="Settings" component={SettingsScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </AgreementsProvider>
   );
 }

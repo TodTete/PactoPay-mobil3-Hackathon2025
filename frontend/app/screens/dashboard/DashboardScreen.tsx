@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -35,6 +35,9 @@ export default function DashboardScreen() {
     </View>
   );
 
+  // Estado para mostrar/ocultar saldo
+  const [showBalance, setShowBalance] = useState(true);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -50,8 +53,12 @@ export default function DashboardScreen() {
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo Disponible</Text>
         <View style={styles.balanceRow}>
-          <Text style={styles.balanceAmount}>$40.06</Text>
-          <Ionicons name="eye-outline" size={20} color="#1e293b" />
+          <Text style={styles.balanceAmount}>
+            {showBalance ? "$40.06" : "****"}
+          </Text>
+          <TouchableOpacity onPress={() => setShowBalance((prev) => !prev)}>
+            <Ionicons name={showBalance ? "eye-outline" : "eye-off-outline"} size={20} color="#1e293b" />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.portfolioBtn}>
           <Text style={styles.portfolioText}>Portafolio</Text>
@@ -64,13 +71,10 @@ export default function DashboardScreen() {
           <Text style={styles.metricLabel}>Acuerdos Activos:</Text>
           <Text style={styles.metricNumber}>10</Text>
         </View>
-        <TouchableOpacity style={styles.createCard}>
-          <Ionicons name="add" size={22} color="#fff" />
-          <Text style={styles.createText}>Crear un Acuerdo</Text>
-        </TouchableOpacity>
+        {/* Botón Crear un Acuerdo eliminado */}
       </View>
 
-      {/* Filtros */}
+      {/* Filtros (solo UI, sin funcionalidad) */}
       <View style={styles.filtersRow}>
         <Text style={styles.filterText}>Filtros</Text>
         <Ionicons name="filter-outline" size={20} color="#38bdf8" />
