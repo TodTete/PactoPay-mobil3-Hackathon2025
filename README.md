@@ -88,3 +88,4 @@ Alineado con los **ODS 8, 10 y 16 de la ONU**.
 * Testear casos reales de freelancers y clientes.
 
 ---
+## En contract podran encontrar el contrato inteligente 
