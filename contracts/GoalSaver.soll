@@ -1,0 +1,354 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+/**
+ *  PactoPay - Payment Splitter Agreement (Monad Testnet compatible)
+ *  Transparencia:
+ *   - Estados on-chain y eventos para cada acción.
+ *   - Porcentajes en basis points (suma = 10000) visibles.
+ *   - Getters para listar contribuyentes, respuestas y vista previa de pagos.
+ *
+ *  Flujo:
+ *   1) Factory despliega PaymentSplitterAgreement con cliente, monto total y contribuyentes.
+ *   2) Contribuyentes aceptan/rechazan con razón.
+ *   3) Cliente fondea con 'fund()' el monto exacto.
+ *   4) Si todos aceptan, cliente ejecuta 'releasePayment()' -> distribución automática.
+ */
+
+/// @notice Mínimo ReentrancyGuard local para evitar dependencias externas.
+abstract contract ReentrancyGuard {
+    uint256 private _locked;
+    modifier nonReentrant() {
+        require(_locked == 0, "ReentrancyGuard: reentrant");
+        _locked = 1;
+        _;
+        _locked = 0;
+    }
+}
+
+contract PaymentSplitterAgreement is ReentrancyGuard {
+    // ====== Tipos y estados ======
+    enum Status {
+        Created,      // desplegado
+        PartiallyOk,  // hay respuestas, no todos aceptan aun
+        Rejected,     // alguien rechazo
+        Funded,       // fondos depositados por el cliente
+        Released,     // cliente autorizo liberacion
+        Distributed,  // fondos distribuidos a contribuyentes
+        Cancelled     // cancelado (antes de release)
+    }
+
+    struct Contributor {
+        address account;
+        uint96 shareBps;   // basis points (1% = 100 bps)
+        bool responded;
+        bool accepted;
+        string reason;     // libre: motivo de aceptacion/rechazo
+        uint256 paid;      // trazabilidad de pago recibido
+    }
+
+    // ====== Inmutables / configuracion ======
+    address public immutable client;     // Persona Y (pagador)
+    uint256 public immutable totalAmount; // en wei (MON en testnet)
+    string public description;            // texto libre (hash/IPFS opcional)
+
+    // ====== Estado ======
+    Status public status;
+    uint256 public fundedAmount; // total fondeado (debe == totalAmount para release)
+    Contributor[] private _contributors;
+    mapping(address => uint256) private _indexOf; // 1-based index; 0 => inexistente
+
+    // ====== Eventos ======
+    event AgreementInitialized(
+        address indexed client,
+        uint256 totalAmount,
+        string description
+    );
+    event ContributorAdded(address indexed account, uint96 shareBps, uint256 index);
+    event ContributorResponded(address indexed account, bool accepted, string reason);
+    event Funded(address indexed from, uint256 amount, uint256 totalFunded);
+    event StatusChanged(Status newStatus);
+    event ReleaseAuthorized(address indexed by);
+    event Paid(address indexed to, uint256 amount);
+    event Refunded(address indexed to, uint256 amount);
+    event Cancelled(address indexed by);
+
+    // ====== Modificadores ======
+    modifier onlyClient() {
+        require(msg.sender == client, "Not client");
+        _;
+    }
+
+    modifier inStatus(Status s) {
+        require(status == s, "Invalid status");
+        _;
+    }
+
+    // ====== Constructor ======
+    constructor(
+        address _client,
+        uint256 _totalAmount,
+        address[] memory accounts,
+        uint96[] memory sharesBps,
+        string memory _description
+    ) payable {
+        require(_client != address(0), "Client zero");
+        require(_totalAmount > 0, "Amount zero");
+        require(accounts.length > 0, "No contributors");
+        require(accounts.length == sharesBps.length, "Array len mismatch");
+
+        // Validar suma de porcentajes = 10000 bps (100%)
+        uint256 sum;
+        for (uint256 i = 0; i < accounts.length; i++) {
+            address a = accounts[i];
+            uint96 bps = sharesBps[i];
+            require(a != address(0), "Contributor zero");
+            require(bps > 0, "Share zero");
+            sum += bps;
+
+            // evitar duplicados
+            require(_indexOf[a] == 0, "Duplicate contributor");
+            _contributors.push(
+                Contributor({
+                    account: a,
+                    shareBps: bps,
+                    responded: false,
+                    accepted: false,
+                    reason: "",
+                    paid: 0
+                })
+            );
+            _indexOf[a] = i + 1; // guardar como 1-based
+            emit ContributorAdded(a, bps, i);
+        }
+        require(sum == 10_000, "Shares must sum 10000 bps");
+
+        client = _client;
+        totalAmount = _totalAmount;
+        description = _description;
+
+        status = Status.Created;
+        emit AgreementInitialized(_client, _totalAmount, _description);
+        emit StatusChanged(Status.Created);
+    }
+
+    // ====== Funciones de lectura (transparencia) ======
+
+    /// @notice Número de contribuyentes
+    function contributorsCount() external view returns (uint256) {
+        return _contributors.length;
+    }
+
+    /// @notice Retorna datos de un contribuyente por índice.
+    function getContributor(uint256 index)
+        external
+        view
+        returns (address account, uint96 shareBps, bool responded, bool accepted, string memory reason, uint256 paid)
+    {
+        Contributor storage c = _contributors[index];
+        return (c.account, c.shareBps, c.responded, c.accepted, c.reason, c.paid);
+    }
+
+    /// @notice Retorna todos los contribuyentes (direcciones y bps) para auditoría off-chain.
+    function getContributorsSnapshot()
+        external
+        view
+        returns (address[] memory accounts, uint96[] memory shares)
+    {
+        uint256 n = _contributors.length;
+        accounts = new address[](n);
+        shares   = new uint96[](n);
+        for (uint256 i = 0; i < n; i++) {
+            accounts[i] = _contributors[i].account;
+            shares[i]   = _contributors[i].shareBps;
+        }
+    }
+
+    /// @notice Vista previa de montos a distribuir dado un valor (por ejemplo, totalAmount o saldo actual).
+    function previewDistribution(uint256 value)
+        external
+        view
+        returns (address[] memory accounts, uint256[] memory amounts)
+    {
+        uint256 n = _contributors.length;
+        accounts = new address[](n);
+        amounts  = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) {
+            accounts[i] = _contributors[i].account;
+            amounts[i]  = (value * _contributors[i].shareBps) / 10_000;
+        }
+    }
+
+    /// @notice ¿Todos aceptaron?
+    function allAccepted() public view returns (bool) {
+        for (uint256 i = 0; i < _contributors.length; i++) {
+            if (!_contributors[i].responded || !_contributors[i].accepted) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // ====== Respuestas de contribuyentes ======
+
+    /// @notice Contribuyente acepta o rechaza, con razón visible.
+    function respond(bool accept, string calldata reason) external {
+        uint256 idx1 = _indexOf[msg.sender];
+        require(idx1 != 0, "Not contributor");
+        uint256 idx = idx1 - 1;
+
+        Contributor storage c = _contributors[idx];
+        require(!c.responded, "Already responded");
+
+        c.responded = true;
+        c.accepted  = accept;
+        c.reason    = reason;
+
+        // actualizar estado
+        if (!accept) {
+            status = Status.Rejected;
+            emit StatusChanged(Status.Rejected);
+        } else {
+            // si todos aceptan, dejamos estado en PartiallyOk o Funded segun fondos
+            if (allAccepted()) {
+                // si ya esta fondeado totalmente, marcamos Funded (sigue esperando release)
+                status = (fundedAmount == totalAmount) ? Status.Funded : Status.PartiallyOk;
+                emit StatusChanged(status);
+            } else if (status == Status.Created) {
+                status = Status.PartiallyOk;
+                emit StatusChanged(Status.PartiallyOk);
+            }
+        }
+
+        emit ContributorResponded(msg.sender, accept, reason);
+    }
+
+    // ====== Fondos (escrow) ======
+
+    /// @notice Cliente deposita exactamente el total pactado (se puede depositar en varias tandas, pero debe alcanzar totalAmount).
+    function fund() external payable onlyClient nonReentrant {
+        require(status != Status.Distributed && status != Status.Cancelled, "Finalized");
+        require(msg.value > 0, "Zero value");
+
+        fundedAmount += msg.value;
+        emit Funded(msg.sender, msg.value, fundedAmount);
+
+        if (fundedAmount > totalAmount) {
+            revert("Overfunded");
+        }
+
+        if (fundedAmount == totalAmount) {
+            // si ya todos aceptaron, marcamos Funded; de lo contrario queda PartiallyOk
+            status = allAccepted() ? Status.Funded : Status.PartiallyOk;
+            emit StatusChanged(status);
+        }
+    }
+
+    /// @notice Permite al cliente cancelar antes de release y recuperar fondos depositados (si existen).
+    function cancel() external onlyClient nonReentrant {
+        require(
+            status == Status.Created || status == Status.PartiallyOk || status == Status.Rejected,
+            "Cannot cancel now"
+        );
+        status = Status.Cancelled;
+        emit StatusChanged(Status.Cancelled);
+        emit Cancelled(msg.sender);
+
+        if (address(this).balance > 0) {
+            uint256 amt = address(this).balance;
+            (bool ok, ) = payable(client).call{value: amt}("");
+            require(ok, "Refund failed");
+            emit Refunded(client, amt);
+        }
+    }
+
+    // ====== Liberación y distribución ======
+
+    /// @notice El cliente autoriza la liberación; requiere (1) todos aceptaron y (2) contrato totalmente fondeado.
+    function releasePayment() external onlyClient nonReentrant inStatus(Status.Funded) {
+        require(allAccepted(), "Not all accepted");
+        require(address(this).balance == totalAmount, "Not fully funded");
+
+        status = Status.Released;
+        emit StatusChanged(Status.Released);
+        emit ReleaseAuthorized(msg.sender);
+
+        _distribute();
+    }
+
+    /// @dev Distribuye todo el balance según bps. Protegido por nonReentrant.
+    function _distribute() internal {
+        uint256 n = _contributors.length;
+        uint256 bal = address(this).balance;
+        require(bal == totalAmount, "Invalid balance");
+
+        // distribución exacta; el último recibe el remanente para evitar redondeos
+        uint256 sent;
+        for (uint256 i = 0; i < n; i++) {
+            uint256 amount;
+            if (i < n - 1) {
+                amount = (totalAmount * _contributors[i].shareBps) / 10_000;
+                sent += amount;
+            } else {
+                amount = totalAmount - sent; // remanente por redondeo
+            }
+
+            _contributors[i].paid += amount;
+
+            (bool ok, ) = payable(_contributors[i].account).call{value: amount}("");
+            require(ok, "Payment failed");
+            emit Paid(_contributors[i].account, amount);
+        }
+
+        status = Status.Distributed;
+        emit StatusChanged(Status.Distributed);
+    }
+
+    // ====== Utilidades ======
+
+    /// @notice Retorna el índice (0-based) de un contribuyente o revierte si no existe.
+    function indexOf(address account) external view returns (uint256) {
+        uint256 idx1 = _indexOf[account];
+        require(idx1 != 0, "Not contributor");
+        return idx1 - 1;
+    }
+
+    /// @notice Saldo actual del contrato.
+    function contractBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    receive() external payable {
+        // Permite recibir fondos (no recomendado excepto via fund()).
+        fundedAmount += msg.value;
+        emit Funded(msg.sender, msg.value, fundedAmount);
+    }
+}
+
+contract PaymentSplitterFactory {
+    event AgreementCreated(address indexed agreement, address indexed client, uint256 totalAmount);
+
+    /// @notice Crea un nuevo acuerdo.
+    /// @param client        Dirección del pagador (Persona Y).
+    /// @param totalAmount   Monto total (wei) a distribuir.
+    /// @param accounts      Contribuyentes.
+    /// @param sharesBps     Porcentajes en basis points (suma = 10000).
+    /// @param description   Texto libre (p. ej., hash/IPFS del acuerdo).
+    function createAgreement(
+        address client,
+        uint256 totalAmount,
+        address[] calldata accounts,
+        uint96[] calldata sharesBps,
+        string calldata description
+    ) external returns (address agreement) {
+        PaymentSplitterAgreement a = new PaymentSplitterAgreement(
+            client,
+            totalAmount,
+            accounts,
+            sharesBps,
+            description
+        );
+        agreement = address(a);
+        emit AgreementCreated(agreement, client, totalAmount);
+    }
+}
